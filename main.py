@@ -88,61 +88,115 @@ def visualizeLabeledData(originalDataPoints, labels, title):
 
 blob_centers = 6
 
-moonsRawData, moonsRealLabels = make_moons(n_samples=300, noise=0.1, random_state=42)
-circlesRawData, circlesRealLabels = make_circles(n_samples=300, factor=0.5, noise=0.05, random_state=42)
-blobsRawData, blobsRealLabels = make_blobs(n_samples = 300, centers=blob_centers, cluster_std=0.5, random_state=0)
+moonsRawData, moonsRealLabels = make_moons(
+    n_samples=300, noise=0.1, random_state=42)
+circlesRawData, circlesRealLabels = make_circles(
+    n_samples=300, factor=0.5, noise=0.05, random_state=42)
+blobsRawData, blobsRealLabels = make_blobs(
+    n_samples = 300, centers=blob_centers, cluster_std=0.5, random_state=0)
 
 # First, visualize the data 
 visualizeUnlabeledData(moonsRawData, "Raw Moons Data")
 visualizeUnlabeledData(circlesRawData, "Raw Circles Data")
-visualizeUnlabeledData(blobsRawData, "Raw Circles Data")
+visualizeUnlabeledData(blobsRawData, "Raw Blobs Data")
 
 # Analyze data using kMeans clustering
-kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(moonsRawData)
-visualizeLabeledData(moonsRawData, kmeans.labels_, "KMeans on Raw Moons Data")
+kmeans = KMeans(
+    n_clusters=2, random_state=0, n_init="auto").fit(moonsRawData)
+visualizeLabeledData(
+    moonsRawData, kmeans.labels_, "KMeans on Raw Moons Data")
 
-kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(circlesRawData)
-visualizeLabeledData(circlesRawData, kmeans.labels_, "KMeans on Raw Circles Data")
+kmeans = KMeans(
+    n_clusters=2, random_state=0, n_init="auto").fit(circlesRawData)
+visualizeLabeledData(
+    circlesRawData, kmeans.labels_, "KMeans on Raw Circles Data")
 
-kmeans = KMeans(n_clusters=blob_centers, random_state=0, n_init="auto").fit(blobsRawData)
-visualizeLabeledData(blobsRawData, kmeans.labels_, "KMeans on Blobs Data")
+kmeans = KMeans(
+    n_clusters=blob_centers, random_state=0, n_init="auto").fit(blobsRawData)
+visualizeLabeledData(
+    blobsRawData, kmeans.labels_, "KMeans on Blobs Data")
 
 
 # Analyze data using spectral clustering followed by kMeans clustering
-sigmaVals = [0.1, 1.0, 10.0]
+sigmaVals = [0.1, 1.0]
 for sigmaVal in sigmaVals:
     # Use unnormalized laplacian
-    unnormalizedMoonsLaplacian = createUnnormalizedLaplacianMatrix(moonsRawData, sigmaVal)
-    moonsUnormalizedCluster = firstKEigenvectorsAsMatrix(2, unnormalizedMoonsLaplacian)
-    kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(moonsUnormalizedCluster)
-    visualizeLabeledData(moonsRawData, kmeans.labels_, f"UNNORMALIZED Laplacian Clustering on Raw Moons Data, sigma = {sigmaVal}")
+    unnormalizedMoonsLaplacian = createUnnormalizedLaplacianMatrix(
+        moonsRawData, sigmaVal)
+    moonsUnormalizedCluster = firstKEigenvectorsAsMatrix(
+        2, unnormalizedMoonsLaplacian)
+    kmeans = KMeans(
+        n_clusters=2,
+        random_state=0,
+        n_init="auto").fit(moonsUnormalizedCluster)
+    visualizeLabeledData(
+        moonsRawData,
+        kmeans.labels_, 
+        f"UNNORMALIZED Laplacian Clustering on Raw Moons Data, sigma = {sigmaVal}")
 
-    unnormalizedCirclesLaplacian = createUnnormalizedLaplacianMatrix(circlesRawData, sigmaVal)
-    circlesUnormalizedCluster = firstKEigenvectorsAsMatrix(2, unnormalizedCirclesLaplacian)
-    kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(circlesUnormalizedCluster)
-    visualizeLabeledData(circlesRawData, kmeans.labels_, f"UNNORMALIZED Laplacian Clustering on Raw Circles Data, sigma = {sigmaVal}") 
+    unnormalizedCirclesLaplacian = createUnnormalizedLaplacianMatrix(
+        circlesRawData, sigmaVal)
+    circlesUnormalizedCluster = firstKEigenvectorsAsMatrix(
+        2, unnormalizedCirclesLaplacian)
+    kmeans = KMeans(
+        n_clusters=2,
+        random_state=0,
+        n_init="auto").fit(circlesUnormalizedCluster)
+    visualizeLabeledData(
+        circlesRawData,
+        kmeans.labels_,
+        f"UNNORMALIZED Laplacian Clustering on Raw Circles Data, sigma = {sigmaVal}") 
 
-    unnormalizedBlobsLaplacian = createUnnormalizedLaplacianMatrix(blobsRawData, sigmaVal)
-    blobsUnormalizedCluster = firstKEigenvectorsAsMatrix(blob_centers, unnormalizedBlobsLaplacian)
-    kmeans = KMeans(n_clusters=blob_centers, random_state=0, n_init="auto").fit(blobsUnormalizedCluster)
-    visualizeLabeledData(blobsRawData, kmeans.labels_, f"UNNORMALIZED Laplacian Clustering on Raw Blob Data, sigma = {sigmaVal}") 
+    unnormalizedBlobsLaplacian = createUnnormalizedLaplacianMatrix(
+        blobsRawData, sigmaVal)
+    blobsUnormalizedCluster = firstKEigenvectorsAsMatrix(
+        blob_centers, unnormalizedBlobsLaplacian)
+    kmeans = KMeans(
+        n_clusters=blob_centers,
+        random_state=0,
+        n_init="auto").fit(blobsUnormalizedCluster)
+    visualizeLabeledData(
+        blobsRawData,
+        kmeans.labels_,
+        f"UNNORMALIZED Laplacian Clustering on Raw Blob Data, sigma = {sigmaVal}") 
 
 
     # Use normalized laplacian
-    normalizedMoonsLaplacian = createNormalizedLaplacianMatrix(moonsRawData, sigmaVal)
-    moonsNormalizedCluster = firstKEigenvectorsAsMatrix(2, normalizedMoonsLaplacian)
-    kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(moonsNormalizedCluster)
-    visualizeLabeledData(moonsRawData, kmeans.labels_, f"NORMALIZED Laplacian Clustering on Raw Moons Data, sigma = {sigmaVal}")
+    normalizedMoonsLaplacian = createNormalizedLaplacianMatrix(
+        moonsRawData, sigmaVal)
+    moonsNormalizedCluster = firstKEigenvectorsAsMatrix(
+        2, normalizedMoonsLaplacian)
+    kmeans = KMeans(
+        n_clusters=2,
+        random_state=0,
+        n_init="auto").fit(moonsNormalizedCluster)
+    visualizeLabeledData(
+        moonsRawData,
+        kmeans.labels_,
+        f"NORMALIZED Laplacian Clustering on Raw Moons Data, sigma = {sigmaVal}")
 
-    normalizedCirclesLaplacian = createNormalizedLaplacianMatrix(circlesRawData, sigmaVal)
-    circlesNormalizedCluster = firstKEigenvectorsAsMatrix(2, normalizedCirclesLaplacian)
-    kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(circlesNormalizedCluster)
-    visualizeLabeledData(circlesRawData, kmeans.labels_, f"NORMALIZED Laplacian Clustering on Raw Circles Data, sigma = {sigmaVal}") 
+    normalizedCirclesLaplacian = createNormalizedLaplacianMatrix(
+        circlesRawData, sigmaVal)
+    circlesNormalizedCluster = firstKEigenvectorsAsMatrix(
+        2, normalizedCirclesLaplacian)
+    kmeans = KMeans(
+        n_clusters=2,
+        random_state=0,
+        n_init="auto").fit(circlesNormalizedCluster)
+    visualizeLabeledData(
+        circlesRawData,
+        kmeans.labels_,
+        f"NORMALIZED Laplacian Clustering on Raw Circles Data, sigma = {sigmaVal}") 
 
-    normalizedBlobsLaplacian = createNormalizedLaplacianMatrix(blobsRawData, sigmaVal)
-    blobsNormalizedCluster = firstKEigenvectorsAsMatrix(blob_centers, normalizedBlobsLaplacian)
-    kmeans = KMeans(n_clusters=blob_centers, random_state=0, n_init="auto").fit(blobsNormalizedCluster)
-    visualizeLabeledData(blobsRawData, kmeans.labels_, f"NORMALIZED Laplacian Clustering on Raw Blob Data, sigma = {sigmaVal}")
-
-
-
+    normalizedBlobsLaplacian = createNormalizedLaplacianMatrix(
+        blobsRawData, sigmaVal)
+    blobsNormalizedCluster = firstKEigenvectorsAsMatrix(
+        blob_centers, normalizedBlobsLaplacian)
+    kmeans = KMeans(
+        n_clusters=blob_centers,
+        random_state=0,
+        n_init="auto").fit(blobsNormalizedCluster)
+    visualizeLabeledData(
+        blobsRawData,
+        kmeans.labels_,
+        f"NORMALIZED Laplacian Clustering on Raw Blob Data, sigma = {sigmaVal}")
