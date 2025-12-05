@@ -10,6 +10,7 @@ colors = ["bo", "ro", "go", "co", "mo", "yo"]
 
 
 def gaussianSimilarity(node1, node2, sigmaVal):
+    # Compute distance between vectors
     xTerm = np.square(node2[1] - node1[1])
     yTerm = np.square(node2[0] - node1[0])
     negatedSquaredDistance = -(xTerm + yTerm)
@@ -30,13 +31,12 @@ def dataToAdjacencyMatrix(data, sigmaVal):
         matrix.append(column)
         i = i + 1
 
-    # adjacencyMatrix = np.array(finalArray)
     adjacencyMatrix = np.column_stack(matrix); 
 
     # Check symmetry
     assert(np.allclose(adjacencyMatrix, adjacencyMatrix.T))
+    # Check positive entries
     assert(np.all(adjacencyMatrix >= 0))
-    print("Adjacency matrix created")
     return adjacencyMatrix
 
 def createUnnormalizedLaplacianMatrix(rawData, sigmaVal):
@@ -44,6 +44,7 @@ def createUnnormalizedLaplacianMatrix(rawData, sigmaVal):
     np.fill_diagonal(W, 0)
     S = np.diag(W.sum(axis=1))
     L = S - W
+    # Check symmetry
     assert(np.allclose(L, L.T))
     return L
 
@@ -54,9 +55,8 @@ def createNormalizedLaplacianMatrix(rawData, sigmaVal):
     S = np.diag(W.sum(axis=1))
     P = np.linalg.inv(sqrtm(S)); 
     L = I - (P@W)@P
+    # Check symmetry
     assert(np.allclose(L, L.T))
-    print("Laplacian:")
-    print(L)
     return L
 
 
@@ -86,20 +86,18 @@ def visualizeLabeledData(originalDataPoints, labels, title):
     plt.show(); 
 
 
-# load datasets from scikit-learn
 blob_centers = 6
 
 moonsRawData, moonsRealLabels = make_moons(n_samples=300, noise=0.1, random_state=42)
 circlesRawData, circlesRealLabels = make_circles(n_samples=300, factor=0.5, noise=0.05, random_state=42)
 blobsRawData, blobsRealLabels = make_blobs(n_samples = 300, centers=blob_centers, cluster_std=0.5, random_state=0)
-print("data created")
 
 # First, visualize the data 
 visualizeUnlabeledData(moonsRawData, "Raw Moons Data")
 visualizeUnlabeledData(circlesRawData, "Raw Circles Data")
 visualizeUnlabeledData(blobsRawData, "Raw Circles Data")
 
-# Analuze moons and circles using kMeans clustering
+# Analyze data using kMeans clustering
 kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(moonsRawData)
 visualizeLabeledData(moonsRawData, kmeans.labels_, "KMeans on Raw Moons Data")
 
@@ -110,8 +108,10 @@ kmeans = KMeans(n_clusters=blob_centers, random_state=0, n_init="auto").fit(blob
 visualizeLabeledData(blobsRawData, kmeans.labels_, "KMeans on Blobs Data")
 
 
+# Analyze data using spectral clustering followed by kMeans clustering
 sigmaVals = [0.1, 1.0, 10.0]
 for sigmaVal in sigmaVals:
+    # Use unnormalized laplacian
     unnormalizedMoonsLaplacian = createUnnormalizedLaplacianMatrix(moonsRawData, sigmaVal)
     moonsUnormalizedCluster = firstKEigenvectorsAsMatrix(2, unnormalizedMoonsLaplacian)
     kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(moonsUnormalizedCluster)
@@ -128,6 +128,7 @@ for sigmaVal in sigmaVals:
     visualizeLabeledData(blobsRawData, kmeans.labels_, f"UNNORMALIZED Laplacian Clustering on Raw Blob Data, sigma = {sigmaVal}") 
 
 
+    # Use normalized laplacian
     normalizedMoonsLaplacian = createNormalizedLaplacianMatrix(moonsRawData, sigmaVal)
     moonsNormalizedCluster = firstKEigenvectorsAsMatrix(2, normalizedMoonsLaplacian)
     kmeans = KMeans(n_clusters=2, random_state=0, n_init="auto").fit(moonsNormalizedCluster)
